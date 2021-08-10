@@ -1,5 +1,5 @@
 // Определяем переменную preprocessor
-let preprocessor = 'sass'; // Выбор препроцессора в проекте - sass или less
+let preprocessor = 'scss'; // Выбор препроцессора в проекте - sass или less
 
 // Определяем константы Gulp
 const { src, dest, parallel, series, watch } = require('gulp');
@@ -16,6 +16,7 @@ const uglify = require('gulp-uglify-es').default;
 // Подключаем модули gulp-sass и gulp-less
 const sass = require('gulp-sass')(require('sass'));
 const less = require('gulp-less');
+const scss = require('gulp-sass')(require('sass'));
 
 // Подключаем Autoprefixer
 const autoprefixer = require('gulp-autoprefixer');
@@ -67,7 +68,10 @@ function startwatch() {
 }
 
 function styles() {
-    return src('app/' + preprocessor + '/main.' + preprocessor + '') // Выбираем источник: "app/sass/main.sass" или "app/less/main.less"
+    return src([
+            'node_modules/normalize.css/normalize.css',
+            'app/' + preprocessor + '/main.' + preprocessor + ''
+        ]) // Выбираем источник: "app/sass/main.sass" или "app/less/main.less"
         .pipe(eval(preprocessor)()) // Преобразуем значение переменной "preprocessor" в функцию
         .pipe(concat('app.min.css')) // Конкатенируем в файл app.min.js
         .pipe(autoprefixer({ overrideBrowserslist: ['last 10 versions'], grid: true })) // Создадим префиксы с помощью Autoprefixer
@@ -85,6 +89,10 @@ function images() {
 
 function cleanimg() {
     return del('app/images/dest/**/*', { force: true }) // Удаляем все содержимое папки "app/images/dest/"
+}
+
+function cleanscss() {
+    return del('app/css/**/*', { force: true }) // Удаляем все содержимое папки "app/css/"
 }
 
 function buildcopy() {
@@ -115,6 +123,9 @@ exports.images = images;
 
 // Экспортируем функцию cleanimg() как таск cleanimg
 exports.cleanimg = cleanimg;
+
+// Экспортируем функцию cleanscss() как таск cleanscss
+exports.cleanscss = cleanscss;
 
 // Создаем новый таск "build", который последовательно выполняет нужные операции
 exports.build = series(cleandist, styles, scripts, images, buildcopy);
